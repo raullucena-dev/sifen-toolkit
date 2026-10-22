@@ -11,8 +11,7 @@ on is listed below with one of three statuses:
 
 **XSD validation.** The CI job `xsd` downloads the official schemas at run time (they are
 never committed) and validates two signed sample invoices, one per receiver type, with
-`xmllint`. Both pass against `siRecepDE_v150.xsd` **except for one known conflict**:
-the schema requires `dRedon`, which this toolkit does not emit (A22b). Run it locally with
+`xmllint`. Both pass against `siRecepDE_v150.xsd`. Run it locally with
 `pnpm xsd:download && pnpm xsd:validate [file.xml]`. The job is informational and
 non-blocking because it depends on the SET website. XSD validation proves **structure**,
 not the business rules SIFEN checks on reception. That is why "XSD-valid" is evidence
@@ -48,19 +47,20 @@ here, not a status.
 | A14 | Unit of measure: only `cUniMed = 77`, with `dDesUniMed = UNI`.                                                                                                                   | Confirmed in production | Covered by the catalog cross-check                                             |
 | A15 | `gValorRestaItem` contains `dDescItem, dDescGloItem, dAntPreUniIt, dAntGloPreUniIt` = 0 and `dTotOpeItem`; `dPorcDesIt` is omitted (no discounts).                               | Assumed                 | XSD-valid (CI)                                                                 |
 | A16 | `gCamIVA` includes `dBasExe` (v150), `0` for fully taxed and exempt items.                                                                                                       | Assumed                 | XSD-valid (CI)                                                                 |
-| A17 | `gTotSub` emits every total field except `dRedon` (see A22b), including zeros. `dTotDescGlotem` keeps the manual's spelling.                                                     | Assumed                 | XSD-valid (CI)                                                                 |
+| A17 | `gTotSub` emits every total field, including zeros (`dRedon` included, see A22b). `dTotDescGlotem` keeps the manual's spelling.                                                  | Assumed                 | XSD-valid (CI)                                                                 |
 | A18 | Dates are Paraguay local time without an offset. `dFecFirma` defaults to now in `America/Asuncion`. Only "emission date ≥ timbrado start" is checked, not the timbrado's expiry. | Assumed                 | Conservative                                                                   |
 | A19 | Text length limits follow the manual where known; some are approximations. Control characters are always rejected.                                                               | Not verified            |                                                                                |
 
 ## Amounts and rounding (PYG)
 
-| #    | Rule                                                                                                                                                                            | Status                  | Evidence                                                                                                                                                                                                            |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A20  | Unit prices are whole guaraníes. Quantities may have up to 4 decimals, but each line total must be a whole number of guaraníes.                                                 | Assumed                 | Stricter than necessary, on purpose                                                                                                                                                                                 |
-| A21  | Item IVA with `dPropIVA = 100`: `dBasGravIVA = 100·dTotOpeItem·dPropIVA / (10000 + dTasaIVA·dPropIVA)`, `dLiqIVAItem = dBasGravIVA·dTasaIVA/100`, kept at 8 decimals (half-up). | Assumed                 | Formulas from the manual                                                                                                                                                                                            |
-| A22  | `gTotSub` amounts are sums of item values rounded half-up to whole guaraníes. `dLiqTotIVA5` and `dLiqTotIVA10` are `0`.                                                         | Assumed                 | `test/totals.test.ts`                                                                                                                                                                                               |
-| A22b | **`dRedon` is not emitted.** Totals are computed without any rounding-adjustment field.                                                                                         | Confirmed in production | **Conflicts with the official XSD:** `siRecepDE_v150.xsd` declares `dRedon` as required, so the informational CI `xsd` job fails on it. Kept per the maintainer's production evidence; see the open question below. |
-| A23  | Arithmetic uses a bigint fixed-point decimal (8 decimals), never binary floating point.                                                                                         | Assumed                 | Design decision, not a SIFEN rule                                                                                                                                                                                   |
+| #    | Rule                                                                                                                                                                            | Status                  | Evidence                                                |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------- |
+| A20  | Unit prices are whole guaraníes. Quantities may have up to 4 decimals, but each line total must be a whole number of guaraníes.                                                 | Assumed                 | Stricter than necessary, on purpose                     |
+| A21  | Item IVA with `dPropIVA = 100`: `dBasGravIVA = 100·dTotOpeItem·dPropIVA / (10000 + dTasaIVA·dPropIVA)`, `dLiqIVAItem = dBasGravIVA·dTasaIVA/100`, kept at 8 decimals (half-up). | Assumed                 | Formulas from the manual                                |
+| A22  | `gTotSub` amounts are sums of item values rounded half-up to whole guaraníes. `dLiqTotIVA5` and `dLiqTotIVA10` are `0`.                                                         | Assumed                 | `test/totals.test.ts`                                   |
+| A22b | **`dRedon` is always emitted, `0` by default.** The official XSD requires it, placed right before `dTotGralOpe`.                                                                | Confirmed in production | XSD-valid (CI); asserted in `test/builder.test.ts`      |
+| A22c | SEDECO rounding (a non-zero `dRedon`) is **not supported**. `dRedon` is always `0` and totals are not adjusted.                                                                 | Not verified            | Out of scope; listed under "Not included" in the README |
+| A23  | Arithmetic uses a bigint fixed-point decimal (8 decimals), never binary floating point.                                                                                         | Assumed                 | Design decision, not a SIFEN rule                       |
 
 ## Signature
 
@@ -88,12 +88,3 @@ here, not a status.
 | A31 | Test endpoints `https://sifen-test.set.gov.py/de/ws/sync/recibe.wsdl`, `…/de/ws/consultas/consulta.wsdl`, `…/de/ws/consultas/consulta-ruc.wsdl` (configurable). | Not verified | Integration test skipped by default |
 | A32 | Requests `rEnviDe{dId, xDE{rDE}}`, `rEnviConsDeRequest{dId, dCDC}`, `rEnviConsRUC{dId, dRUCCons}` (RUC without DV); `dId` unique, up to 15 digits.              | Not verified | Mocked tests only                   |
 | A33 | Responses parsed by local name (`rProtDe`, `gResProc`, `xContenDE`, `xContRUC`, …). A status starting with "Aprobado" counts as approved.                       | Not verified | Mocked tests only                   |
-
-## Open question
-
-- **`dRedon` (A22b).** Invoices approved in production omit `dRedon`, but the official
-  `siRecepDE_v150.xsd` downloaded in CI requires it, placed right before `dTotGralOpe`.
-  Possible explanations: the production integration targets a different schema revision,
-  or reception does not enforce this element. Until that is resolved, the CI `xsd` job is
-  expected to fail on this element only. Emitting `<dRedon>0</dRedon>` would satisfy the
-  schema.

@@ -195,13 +195,11 @@ Official XSDs are **not** committed. `pnpm xsd:download` fetches them into a git
 ## Accuracy
 
 - **Structure** is validated against the official XSD in CI: signed sample invoices
-  for both receiver types pass `siRecepDE_v150.xsd`, with one known conflict. The schema
-  requires `dRedon`, which is intentionally not emitted (see
-  [docs/assumptions.md](docs/assumptions.md), A22b).
+  for both receiver types pass `siRecepDE_v150.xsd`.
 - **Signing, QR and core business rules** are confirmed against a production SIFEN
   integration whose documents are approved by the SET. That covers exclusive c14n for
-  `SignedInfo` and the reference, the lowercase hex `cHashQR`, totals without a
-  rounding-adjustment field (`dRedon`), and the code→description catalogs. The catalogs
+  `SignedInfo` and the reference, the lowercase hex `cHashQR`, `dRedon` always emitted
+  (`0` by default), and the code→description catalogs. The catalogs
   are also cross-checked by a test against published reference constants.
 - Everything else is listed with its status (_Confirmed in production_, _Assumed_ or
   _Not verified_) in [docs/assumptions.md](docs/assumptions.md).
@@ -215,6 +213,7 @@ Out of scope on purpose:
 - Notas de crédito / débito, nota de remisión, autofactura and other document types
 - Credit sales, card and cheque payments, discounts, advances, foreign currency, other
   units of measure, and partially exempt or exonerated IVA
+- SEDECO rounding (a non-zero `dRedon`); `dRedon` is always `0`
 - KuDE (printable representation) generation
 - Production hardening: production endpoints, retries and back-off, contingency mode,
   persistence, idempotency, HSM/KMS signing, rate limiting and authentication on the

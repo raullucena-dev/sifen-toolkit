@@ -18,7 +18,7 @@ async function fetchSchema(url: string): Promise<void> {
   if (seen.has(url)) return;
   const name = basename(new URL(url).pathname);
   seen.set(url, name);
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   if (!response.ok) throw new Error(`GET ${url} → HTTP ${response.status}`);
   let content = await response.text();
 

@@ -76,6 +76,7 @@
     "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
+    "facturacionelectronicapy-xmlgen": "^1.0.283",
     "globals": "^17.13.0",
     "nock": "^15.0.5",
     "prettier": "^3.9.10",

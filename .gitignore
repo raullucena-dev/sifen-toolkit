@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+# Official XSDs are downloaded locally (scripts/download-xsd.ts) and never committed.
+xsd/
+.env
+*.p12
+*.pfx
+*.pem
+*.key

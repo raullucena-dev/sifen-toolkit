@@ -1,0 +1,87 @@
+{
+  "name": "sifen-toolkit",
+  "version": "0.1.0",
+  "description": "TypeScript toolkit for Paraguay's SIFEN electronic invoicing (Manual Técnico v150): CDC, RUC, Factura Electrónica XML, XMLDSig signing, QR and a test-environment SOAP client.",
+  "license": "MIT",
+  "author": "Raúl Lucena <rjlucen@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raullucena-dev/sifen-toolkit.git"
+  },
+  "keywords": [
+    "sifen",
+    "paraguay",
+    "factura-electronica",
+    "set",
+    "ekuatia",
+    "xmldsig",
+    "cdc",
+    "ruc"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/server/main.ts",
+    "start": "node dist/server/main.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "xsd:download": "tsx scripts/download-xsd.ts",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:coverage && pnpm build"
+  },
+  "dependencies": {
+    "@fastify/swagger": "^9.9.2",
+    "@fastify/swagger-ui": "^6.1.2",
+    "@xmldom/xmldom": "^0.9.12",
+    "fastify": "^5.12.7",
+    "node-forge": "^1.4.0",
+    "xml-crypto": "^6.4.0",
+    "xmlbuilder2": "^4.0.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.5",
+    "@types/node-forge": "^1.3.14",
+    "@vitest/coverage-v8": "^5.0.5",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "nock": "^15.0.5",
+    "prettier": "^3.9.10",
+    "tsup": "^9.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
+  }
+}

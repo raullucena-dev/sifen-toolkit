@@ -1,0 +1,5 @@
+dist
+coverage
+xsd
+pnpm-lock.yaml
+test/__snapshots__

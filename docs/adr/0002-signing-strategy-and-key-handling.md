@@ -13,8 +13,9 @@ key can issue tax documents in the company's name.
 
 - **Algorithms:** RSA-SHA256 signature, SHA-256 digest, transforms enveloped-signature +
   exclusive c14n, reference `URI="#<CDC>"`, and the certificate in
-  `KeyInfo/X509Data`. The `SignedInfo` canonicalization is configurable because the
-  published samples are ambiguous (see `docs/assumptions.md`, A25).
+  `KeyInfo/X509Data`. `SignedInfo` also uses exclusive c14n. Using exclusive c14n for
+  both is confirmed against a production SIFEN integration (`docs/assumptions.md`, A24
+  and A25). It stays configurable for setups that differ.
 - **Libraries:** `xml-crypto` for XMLDSig and `node-forge` only to open PKCS#12. Key
   operations and checks use `node:crypto`. The key and certificate are checked to match,
   and only RSA keys are accepted.

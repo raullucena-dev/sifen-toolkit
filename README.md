@@ -183,17 +183,26 @@ curl -s localhost:3000/ruc/80000002-1
 | Validation   | zod rejections: wrong RUC DV, timezone in dates, emission before the timbrado, IVA 15%, fractional guaraníes, innominado rules and more                                                |
 | XML          | Snapshots for both receiver types, element order, namespace, escaping                                                                                                                  |
 | Signature    | Verifies with the public key, and the `SignatureValue` also verifies with plain `node:crypto`; tampering, wrong certificate, duplicate signatures and wrapping are rejected            |
-| QR           | A fixed `cHashQR` vector and the hex encodings                                                                                                                                         |
+| QR           | A fixed `cHashQR` vector, lowercase hex and the hex encodings                                                                                                                          |
 | SOAP         | Mocked SIFEN (nock): approvals, rejections, faults, HTTP errors, timeouts; plus a **real local HTTPS server that requires a client certificate**, to prove mutual TLS                  |
 | Service      | Every endpoint and error mapping through `fastify.inject`, and the OpenAPI document                                                                                                    |
 | Integration  | `test/integration.test.ts` runs against SIFEN test only when `SIFEN_TEST_CERT_P12_PATH` and `SIFEN_TEST_RUC` are set                                                                   |
 
 Coverage is enforced at 85% in CI (currently about 99% of lines and 90% of branches).
 Official XSDs are **not** committed. `pnpm xsd:download` fetches them into a gitignored
-`xsd/` folder and `pnpm xsd:validate` checks generated documents with `xmllint`. In CI,
-signed sample invoices for both receiver types validate against `siRecepDE_v150.xsd`.
-That proves structure. Business rules checked by SIFEN on reception are tracked in
-[docs/assumptions.md](docs/assumptions.md).
+`xsd/` folder and `pnpm xsd:validate` checks generated documents with `xmllint`.
+
+## Accuracy
+
+- **Structure** is validated against the official XSD in CI: signed sample invoices
+  for both receiver types pass `siRecepDE_v150.xsd`.
+- **Signing, QR and core business rules** are confirmed against a production SIFEN
+  integration whose documents are approved by the SET. That covers exclusive c14n for
+  `SignedInfo` and the reference, the lowercase hex `cHashQR`, totals without a
+  rounding-adjustment field (`dRedon`), and the code→description catalogs. The catalogs
+  are also cross-checked by a test against published reference constants.
+- Everything else is listed with its status (_Confirmed in production_, _Assumed_ or
+  _Not verified_) in [docs/assumptions.md](docs/assumptions.md).
 
 ## Not included
 
@@ -209,8 +218,8 @@ Out of scope on purpose:
   persistence, idempotency, HSM/KMS signing, rate limiting and authentication on the
   HTTP service
 
-Rules I could not confirm are implemented conservatively and listed in
-[docs/assumptions.md](docs/assumptions.md).
+Rules not yet confirmed are implemented conservatively. They are listed with their status
+in [docs/assumptions.md](docs/assumptions.md).
 
 ## Design decisions
 
@@ -261,8 +270,9 @@ la facturación electrónica de Paraguay (SIFEN, Manual Técnico v150). Hace lo 
   siConsRUC) con TLS mutuo.
 
 No incluye lotes, eventos, notas de crédito o débito, remisión, autofactura ni
-endurecimiento para producción. Las reglas que no pude confirmar están documentadas en
-`docs/assumptions.md`.
+endurecimiento para producción. La estructura se valida contra el XSD oficial en CI. La
+firma, el QR y las reglas de negocio principales están confirmados contra una integración
+SIFEN en producción. El estado de cada regla está en `docs/assumptions.md`.
 
 ---
 

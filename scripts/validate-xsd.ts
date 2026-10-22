@@ -27,25 +27,42 @@ if (!existsSync(schema)) {
 }
 
 const inputFile = process.argv[2];
-let file: string;
+const files: string[] = [];
 if (inputFile) {
-  file = inputFile;
+  files.push(inputFile);
 } else {
   const cert = createTestCertificate();
-  const signed = createSignedInvoice(
-    sampleInvoice(),
-    loadPkcs12(cert.p12, cert.password),
-    TEST_CSC,
-  );
-  file = join(mkdtempSync(join(tmpdir(), "sifen-xsd-")), "sample.xml");
-  writeFileSync(file, signed.signedXml);
-  console.log(`generated ${file} (CDC ${signed.cdc})`);
+  const credentials = loadPkcs12(cert.p12, cert.password);
+  const dir = mkdtempSync(join(tmpdir(), "sifen-xsd-"));
+  const samples = {
+    contribuyente: sampleInvoice(),
+    "no-contribuyente": sampleInvoice({
+      receptor: {
+        tipo: "no_contribuyente",
+        tipoDocumento: 1,
+        numeroDocumento: "1234567",
+        nombre: "Persona Ficticia",
+        email: "cliente@example.com",
+      },
+    }),
+  };
+  for (const [name, input] of Object.entries(samples)) {
+    const signed = createSignedInvoice(input, credentials, TEST_CSC);
+    const file = join(dir, `${name}.xml`);
+    writeFileSync(file, signed.signedXml);
+    files.push(file);
+    console.log(`generated ${file} (CDC ${signed.cdc})`);
+  }
 }
 
-try {
-  execFileSync("xmllint", ["--noout", "--nonet", "--schema", schema, file], { stdio: "inherit" });
-} catch {
-  console.error("XSD validation failed");
-  console.error(readFileSync(file, "utf8").slice(0, 200));
-  process.exit(1);
+let failed = false;
+for (const file of files) {
+  try {
+    execFileSync("xmllint", ["--noout", "--nonet", "--schema", schema, file], { stdio: "inherit" });
+  } catch {
+    failed = true;
+    console.error(`XSD validation failed for ${file}`);
+    console.error(readFileSync(file, "utf8").slice(0, 200));
+  }
 }
+process.exit(failed ? 1 : 0);

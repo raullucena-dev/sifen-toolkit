@@ -56,7 +56,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "xsd:download": "tsx scripts/download-xsd.ts",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:coverage && pnpm build"
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:coverage && pnpm build",
+    "xsd:validate": "tsx scripts/validate-xsd.ts"
   },
   "dependencies": {
     "@fastify/swagger": "^9.9.2",

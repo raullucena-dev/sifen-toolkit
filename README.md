@@ -195,7 +195,9 @@ Official XSDs are **not** committed. `pnpm xsd:download` fetches them into a git
 ## Accuracy
 
 - **Structure** is validated against the official XSD in CI: signed sample invoices
-  for both receiver types pass `siRecepDE_v150.xsd`.
+  for both receiver types pass `siRecepDE_v150.xsd`, with one known conflict. The schema
+  requires `dRedon`, which is intentionally not emitted (see
+  [docs/assumptions.md](docs/assumptions.md), A22b).
 - **Signing, QR and core business rules** are confirmed against a production SIFEN
   integration whose documents are approved by the SET. That covers exclusive c14n for
   `SignedInfo` and the reference, the lowercase hex `cHashQR`, totals without a

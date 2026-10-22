@@ -5,11 +5,17 @@ with certainty, the implementation takes the **conservative** option: it rejects
 rather than guessing, or emits the most explicit form. Each such point is listed here
 with a `TODO` to confirm against the official XSDs and the SIFEN test environment.
 
-Run `pnpm xsd:download && pnpm xsd:validate` to check the generated XML against the
-official schemas on your machine. The CI job `xsd` does the same, but it is
-informational and non-blocking because it depends on the SET website. The XSDs could
-not be downloaded from the environment this project was developed in, so **the output
-has not yet been validated against them here**.
+**XSD validation.** The CI job `xsd` downloads the official schemas at run time (they are
+never committed) and validates two signed sample invoices, one per receiver type, with
+`xmllint`. Both pass against `siRecepDE_v150.xsd`. Run it locally with
+`pnpm xsd:download && pnpm xsd:validate [file.xml]`. The job is informational and
+non-blocking because it depends on the SET website.
+
+XSD validation proves **structure**: element names, order, required fields, types and
+lengths. It does **not** prove business rules that SIFEN checks on reception: that
+descriptions match codes, the IVA and total calculations, the canonicalization choice, the
+QR hash, or the timbrado's validity. Those remain marked `TODO` below until they are
+confirmed against the SIFEN test environment.
 
 ## Check digits
 
@@ -30,8 +36,8 @@ has not yet been validated against them here**.
 
 | #   | Assumption                                                                                                                                                                                                                              | Status                             |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| A6  | Root `rDE` in namespace `http://ekuatia.set.gov.py/sifen/xsd` with `xsi:schemaLocation="… siRecepDE_v150.xsd"`; `dVerFor` = `150`; `DE/@Id` = CDC.                                                                                      | TODO: XSD                          |
-| A7  | Only the fields needed for a basic invoice are emitted, in manual order: `dDVId, dFecFirma, dSisFact, gOpeDE, gTimb, gDatGralOpe, gDtipDE, gTotSub`.                                                                                    | TODO: XSD                          |
+| A6  | Root `rDE` in namespace `http://ekuatia.set.gov.py/sifen/xsd` with `xsi:schemaLocation="… siRecepDE_v150.xsd"`; `dVerFor` = `150`; `DE/@Id` = CDC.                                                                                      | XSD-valid (CI)                     |
+| A7  | Only the fields needed for a basic invoice are emitted, in manual order: `dDVId, dFecFirma, dSisFact, gOpeDE, gTimb, gDatGralOpe, gDtipDE, gTotSub`.                                                                                    | XSD-valid (CI)                     |
 | A8  | `dSisFact` = 1 (taxpayer's own system).                                                                                                                                                                                                 |                                    |
 | A9  | Fixed descriptions (`dDes*`) are taken from the manual tables, including accents (e.g. `Factura electrónica`, `Venta de mercadería`) and `Guarani` without an accent. SIFEN validates descriptions against codes.                       | TODO: confirm exact strings        |
 | A10 | Department, district, city and economic-activity **codes and descriptions are supplied by the caller**. The official tables are long and change over time, so they are not bundled.                                                     | Caller responsibility              |
@@ -39,9 +45,9 @@ has not yet been validated against them here**.
 | A12 | Receiver: only B2B (`iTiOpe=1`) and B2C (`iTiOpe=2`) are supported. Receivers without RUC are always B2C. Country is always PRY. The receiver's address is omitted (optional). "Innominado" (`iTipIDRec=5`) requires `dNumIDRec = "0"`. | TODO: confirm the innominado rules |
 | A13 | Payment: `iCondOpe = 1` (contado) with a single `gPaConEIni` of `iTiPago = 1` (efectivo) for the full `dTotGralOpe`. Credit, cards and cheques need extra groups and are not supported.                                                 | Scope                              |
 | A14 | Unit of measure: only `cUniMed = 77` (`UNI`).                                                                                                                                                                                           | TODO: add the table                |
-| A15 | `gValorRestaItem` always contains `dDescItem, dDescGloItem, dAntPreUniIt, dAntGloPreUniIt` = 0 and `dTotOpeItem`. `dPorcDesIt` is omitted because discounts are not supported.                                                          | TODO: XSD                          |
-| A16 | `gCamIVA` includes `dBasExe` (introduced in v150 for partially exempt items). It is `0` for both fully taxed and exempt items.                                                                                                          | TODO: XSD                          |
-| A17 | All `gTotSub` fields are emitted, including zeros. `dTotDescGlotem` keeps the manual's spelling.                                                                                                                                        | TODO: XSD                          |
+| A15 | `gValorRestaItem` always contains `dDescItem, dDescGloItem, dAntPreUniIt, dAntGloPreUniIt` = 0 and `dTotOpeItem`. `dPorcDesIt` is omitted because discounts are not supported.                                                          | XSD-valid (CI)                     |
+| A16 | `gCamIVA` includes `dBasExe` (introduced in v150 for partially exempt items). It is `0` for both fully taxed and exempt items.                                                                                                          | XSD-valid (CI)                     |
+| A17 | All `gTotSub` fields are emitted, including zeros. `dTotDescGlotem` keeps the manual's spelling.                                                                                                                                        | XSD-valid (CI)                     |
 | A18 | Dates are Paraguay local time without an offset (`YYYY-MM-DDThh:mm:ss`). `dFecFirma` defaults to the current time in `America/Asuncion`. Only "emission date ≥ timbrado start" is checked; the timbrado's expiry is not.                | Conservative                       |
 | A19 | Text limits follow the manual where known (e.g. names 4–255). Some limits are approximations. Control characters are always rejected.                                                                                                   | TODO                               |
 

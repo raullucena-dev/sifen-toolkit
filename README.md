@@ -190,7 +190,10 @@ curl -s localhost:3000/ruc/80000002-1
 
 Coverage is enforced at 85% in CI (currently about 99% of lines and 90% of branches).
 Official XSDs are **not** committed. `pnpm xsd:download` fetches them into a gitignored
-`xsd/` folder and `pnpm xsd:validate` checks a generated document with `xmllint`.
+`xsd/` folder and `pnpm xsd:validate` checks generated documents with `xmllint`. In CI,
+signed sample invoices for both receiver types validate against `siRecepDE_v150.xsd`.
+That proves structure. Business rules checked by SIFEN on reception are tracked in
+[docs/assumptions.md](docs/assumptions.md).
 
 ## Not included
 

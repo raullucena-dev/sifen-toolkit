@@ -258,6 +258,7 @@ const TOTAL_FIELDS = [
   "dPorcDescTotal",
   "dDescTotal",
   "dAnticipo",
+  "dRedon",
   "dTotGralOpe",
   "dIVA5",
   "dIVA10",

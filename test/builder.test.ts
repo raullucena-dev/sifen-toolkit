@@ -94,10 +94,11 @@ describe("Factura Electrónica XML", () => {
     ]);
   });
 
-  it("does not emit a rounding adjustment (dRedon)", () => {
+  it("always emits dRedon = 0 right before dTotGralOpe", () => {
     const { xml } = build();
-    expect(xml).not.toContain("dRedon");
-    expect(childNames(xml, "gTotSub")).toContain("dTotGralOpe");
+    expect(xml).toContain("<dAnticipo>0</dAnticipo><dRedon>0</dRedon><dTotGralOpe>");
+    const totals = childNames(xml, "gTotSub");
+    expect(totals.indexOf("dRedon")).toBe(totals.indexOf("dTotGralOpe") - 1);
   });
 
   it("writes emitter and receiver identification without the DV in the RUC field", () => {

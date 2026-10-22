@@ -172,6 +172,7 @@ exports[`Factura Electrónica XML > matches the snapshot for a contribuyente rec
 <dPorcDescTotal>0</dPorcDescTotal>
 <dDescTotal>0</dDescTotal>
 <dAnticipo>0</dAnticipo>
+<dRedon>0</dRedon>
 <dTotGralOpe>208000</dTotGralOpe>
 <dIVA5>5000</dIVA5>
 <dIVA10>9091</dIVA10>
@@ -305,6 +306,7 @@ exports[`Factura Electrónica XML > matches the snapshot for a no contribuyente 
 <dPorcDescTotal>0</dPorcDescTotal>
 <dDescTotal>0</dDescTotal>
 <dAnticipo>0</dAnticipo>
+<dRedon>0</dRedon>
 <dTotGralOpe>55000</dTotGralOpe>
 <dIVA5>0</dIVA5>
 <dIVA10>5000</dIVA10>

@@ -52,6 +52,10 @@ export function httpsTransport(options: {
   });
   return (url, envelope) =>
     new Promise<TransportResponse>((resolve, reject) => {
+      let timedOut = false;
+      const fail = (error: Error) => {
+        reject(timedOut ? new SifenSoapError(`request to ${url} timed out`) : error);
+      };
       const req = request(
         url,
         {
@@ -69,13 +73,14 @@ export function httpsTransport(options: {
           res.on("end", () => {
             resolve({ status: res.statusCode ?? 0, body: Buffer.concat(chunks).toString("utf8") });
           });
-          res.on("error", reject);
+          res.on("error", fail);
         },
       );
       req.on("timeout", () => {
-        req.destroy(new SifenSoapError(`request to ${url} timed out`));
+        timedOut = true;
+        req.destroy();
       });
-      req.on("error", reject);
+      req.on("error", fail);
       req.end(envelope);
     });
 }

@@ -55,11 +55,20 @@ export interface ConsultaRUCResult {
 }
 
 function parseBody(xml: string): Element {
-  const doc = new DOMParser({
-    onError: (level, message) => {
-      if (level !== "warning") throw new SifenSoapError(`malformed SOAP response: ${message}`);
-    },
-  }).parseFromString(xml, "text/xml");
+  let parseError: string | undefined;
+  let doc: ReturnType<DOMParser["parseFromString"]> | undefined;
+  try {
+    doc = new DOMParser({
+      onError: (level, message) => {
+        if (level !== "warning") parseError ??= message;
+      },
+    }).parseFromString(xml, "text/xml");
+  } catch (error) {
+    parseError ??= error instanceof Error ? error.message : String(error);
+  }
+  if (parseError !== undefined || !doc) {
+    throw new SifenSoapError(`malformed SOAP response: ${parseError ?? "empty"}`, { body: xml });
+  }
   const body = doc.getElementsByTagNameNS(SOAP12_NAMESPACE, "Body")[0];
   if (!body) throw new SifenSoapError("response is not a SOAP 1.2 envelope", { body: xml });
   const fault = body.getElementsByTagNameNS(SOAP12_NAMESPACE, "Fault")[0];

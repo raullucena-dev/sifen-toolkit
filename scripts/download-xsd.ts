@@ -22,18 +22,25 @@ async function fetchSchema(url: string): Promise<void> {
   if (!response.ok) throw new Error(`GET ${url} → HTTP ${response.status}`);
   let content = await response.text();
 
-  const locations = [...content.matchAll(/schemaLocation="([^"]+)"/g)]
-    .map((match) => match[1])
-    .filter((value): value is string => value !== undefined && value.endsWith(".xsd"));
-  for (const location of locations) {
-    const absolute = new URL(location, url).toString();
-    await fetchSchema(absolute);
-    // Point includes/imports at the local copy so validation works offline.
-    content = content.replaceAll(
-      `schemaLocation="${location}"`,
-      `schemaLocation="${basename(location)}"`,
-    );
+  // Matches schemaLocation on xs:include/xs:import, with either quote style and spacing.
+  const pattern =
+    /(<(?:[\w-]+:)?(?:include|import)\b[^>]*?\bschemaLocation\s*=\s*)(["'])\s*([^"']+?)\s*\2/g;
+  const locations = [...content.matchAll(pattern)].map((match) => match[3] ?? "");
+  for (const location of new Set(locations)) {
+    if (!location) continue;
+    await fetchSchema(new URL(location, url).toString());
   }
+  // Point includes/imports at the local copies so validation works offline (--nonet).
+  content = content.replace(
+    pattern,
+    (_all, prefix: string, quote: string, location: string) =>
+      `${prefix}${quote}${basename(new URL(location, url).pathname)}${quote}`,
+  );
+  const remaining = [...content.matchAll(/schemaLocation\s*=\s*["']([^"']*:\/\/[^"']*)["']/g)]
+    .map((m) => m[1])
+    .filter((value) => value?.endsWith(".xsd"));
+  if (remaining.length > 0)
+    console.warn(`${name}: unresolved remote schemas ${remaining.join(", ")}`);
   await writeFile(join(OUT_DIR, name), content);
   console.log(`saved ${name}`);
 }

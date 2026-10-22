@@ -17,9 +17,9 @@ jobs:
     name: Lint & typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -32,9 +32,9 @@ jobs:
     name: Tests & coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -49,7 +49,7 @@ jobs:
             const rows = ["lines","statements","functions","branches"].map(k => `| ${k} | ${t[k].pct}% |`);
             console.log(["| metric | coverage |","| --- | --- |", ...rows].join("\n"));
           ' >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: coverage
@@ -59,9 +59,9 @@ jobs:
     name: Build, package & Docker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -87,9 +87,9 @@ jobs:
     # Depends on an external SET website; never blocks the pipeline.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -101,8 +101,10 @@ jobs:
           set -o pipefail
           if ! pnpm xsd:validate 2>&1 | tee xsd.log; then
             # Surface schema errors as annotations (visible without downloading logs).
-            grep -E "error|fails to validate|Schemas validity" xsd.log | head -10 | while read -r line; do
+            grep -E "error|fails to validate|Schemas validity" xsd.log | head -8 | while read -r line; do
               echo "::error title=XSD::${line}"
             done
+            echo "::error title=XSD files::$(ls xsd | tr '\n' ' ')"
+            echo "::error title=XSD locations::$(grep -ho 'schemaLocation[^>]*' xsd/*.xsd | head -5 | tr '\n' ' ')"
             exit 1
           fi

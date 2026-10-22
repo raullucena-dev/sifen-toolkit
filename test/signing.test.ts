@@ -71,6 +71,14 @@ describe("XMLDSig", () => {
     expect(xml).toContain("<X509Certificate>");
   });
 
+  it("uses exclusive c14n for both SignedInfo and the Reference by default", () => {
+    const { xml } = signInvoiceXml(unsigned(), credentials);
+    const transforms = [...xml.matchAll(/<Transform Algorithm="([^"]+)"\/>/g)].map((m) => m[1]);
+    expect(transforms).toEqual([ALGORITHMS.envelopedSignature, ALGORITHMS.excC14n]);
+    expect(xml).toContain(`<CanonicalizationMethod Algorithm="${ALGORITHMS.excC14n}"/>`);
+    expect(xml).not.toContain(ALGORITHMS.c14n);
+  });
+
   it("verifies with the public key", () => {
     const { xml } = signInvoiceXml(unsigned(), credentials);
     expect(verifyInvoiceSignature(xml, cert.certificatePem)).toEqual({ valid: true, errors: [] });

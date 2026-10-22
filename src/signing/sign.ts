@@ -15,8 +15,8 @@ const DE_XPATH = "//*[local-name(.)='DE']";
 
 export interface SignOptions {
   /**
-   * Canonicalization for SignedInfo. Defaults to exclusive c14n; see docs/assumptions.md
-   * for why this is configurable.
+   * Canonicalization for SignedInfo. Defaults to exclusive c14n, which is confirmed against
+   * a production SIFEN integration; configurable for setups that differ.
    */
   signedInfoCanonicalization?: typeof ALGORITHMS.excC14n | typeof ALGORITHMS.c14n;
 }

@@ -32,7 +32,6 @@ export interface InvoiceTotals {
   dPorcDescTotal: Decimal;
   dDescTotal: Decimal;
   dAnticipo: Decimal;
-  dRedon: Decimal;
   dTotGralOpe: Decimal;
   dIVA5: Decimal;
   dIVA10: Decimal;
@@ -92,7 +91,8 @@ export function computeItem(item: InvoiceItem): ItemAmounts {
 
 /**
  * Invoice totals (gTotSub). Amounts in PYG are rounded half-up to whole guaraníes.
- * dRedon is 0: the rounding is applied to each total rather than booked as an adjustment.
+ * There is no rounding-adjustment field: dRedon is not emitted, matching invoices approved
+ * in production.
  */
 export function computeTotals(items: readonly ItemAmounts[]): InvoiceTotals {
   const by = (pred: (i: ItemAmounts) => boolean, pick: (i: ItemAmounts) => Decimal) =>
@@ -125,7 +125,6 @@ export function computeTotals(items: readonly ItemAmounts[]): InvoiceTotals {
     dPorcDescTotal: zero,
     dDescTotal: zero,
     dAnticipo: zero,
-    dRedon: zero,
     dTotGralOpe: dTotOpe,
     dIVA5,
     dIVA10,

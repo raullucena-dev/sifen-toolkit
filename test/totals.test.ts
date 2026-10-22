@@ -44,8 +44,8 @@ describe("IVA and totals", () => {
       dBaseGrav10: "90909",
       dTotIVA: "9091",
       dTBasGraIVA: "90909",
-      dRedon: "0",
     });
+    expect(totals).not.toHaveProperty("dRedon");
   });
 
   it("handles tiny amounts", () => {

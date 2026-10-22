@@ -29,11 +29,13 @@ export interface QrInput {
   environment?: SifenEnvironment;
 }
 
+/** Lowercase hex of the UTF-8 text (Buffer#toString("hex") is always lowercase). */
 const toHex = (value: string) => Buffer.from(value, "utf8").toString("hex");
 
 /**
  * Builds dCarQR. The parameter string (everything after `?`) is hashed together with the
- * CSC: `cHashQR = sha256_hex(params + CSC)`, then appended as the last parameter.
+ * CSC: `cHashQR = sha256_hex(params + CSC)` in lowercase hex, then appended as the last
+ * parameter. Lowercase is confirmed against a production SIFEN integration.
  */
 export function buildQrUrl(input: QrInput): string {
   if (!/^\d{44}$/.test(input.cdc)) throw new TypeError("cdc must be 44 digits");
@@ -61,6 +63,7 @@ export function buildQrUrl(input: QrInput): string {
   ].join("&");
   const hash = createHash("sha256")
     .update(params + input.csc)
-    .digest("hex");
+    .digest("hex")
+    .toLowerCase();
   return `${QR_BASE_URLS[input.environment ?? "test"]}${params}&cHashQR=${hash}`;
 }

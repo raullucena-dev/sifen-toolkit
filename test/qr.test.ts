@@ -47,6 +47,14 @@ describe("dCarQR", () => {
     expect(buildQrUrl({ ...input, csc: "Z".repeat(32) })).not.toContain(hash);
   });
 
+  it("emits cHashQR and the hex parameters in lowercase", () => {
+    const params = new URLSearchParams(buildQrUrl(input).split("?")[1]);
+    expect(params.get("cHashQR")).toMatch(/^[0-9a-f]{64}$/);
+    // DigestValue contains uppercase base64 letters; its hex form must still be lowercase.
+    expect(params.get("DigestValue")).toMatch(/^[0-9a-f]+$/);
+    expect(params.get("dFeEmiDE")).toMatch(/^[0-9a-f]+$/);
+  });
+
   it("encodes dFeEmiDE and DigestValue as hex of their text", () => {
     const url = buildQrUrl(input);
     const params = new URLSearchParams(url.split("?")[1]);

@@ -50,3 +50,28 @@ export {
   type FinalizeOptions,
   type SignedInvoice,
 } from "./invoice/finalize.js";
+export { SIFEN_TEST_ENDPOINTS, type SifenEndpoints } from "./soap/endpoints.js";
+export {
+  consultaDEEnvelope,
+  consultaRUCEnvelope,
+  recepcionDEEnvelope,
+  SOAP12_NAMESPACE,
+} from "./soap/envelope.js";
+export {
+  parseConsultaDEResponse,
+  parseConsultaRUCResponse,
+  parseRecepcionResponse,
+  SifenSoapError,
+  type ConsultaDEResult,
+  type ConsultaRUCResult,
+  type RecepcionResult,
+  type ResultMessage,
+} from "./soap/parse.js";
+export {
+  httpsTransport,
+  nextRequestId,
+  SifenClient,
+  type SifenClientOptions,
+  type Transport,
+  type TransportResponse,
+} from "./soap/client.js";

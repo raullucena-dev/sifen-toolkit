@@ -32,3 +32,21 @@ export {
   type BuildOptions,
   type BuiltInvoice,
 } from "./invoice/builder.js";
+export { loadPem, loadPkcs12, type SigningCredentials } from "./signing/credentials.js";
+export {
+  ALGORITHMS,
+  extractDigestValue,
+  signInvoiceXml,
+  verifyInvoiceSignature,
+  type SignedDocument,
+  type SignOptions,
+  type VerificationResult,
+} from "./signing/sign.js";
+export { buildQrUrl, QR_BASE_URLS, type QrInput, type SifenEnvironment } from "./qr/qr.js";
+export {
+  createSignedInvoice,
+  signBuiltInvoice,
+  type CscConfig,
+  type FinalizeOptions,
+  type SignedInvoice,
+} from "./invoice/finalize.js";
